@@ -2,3 +2,4 @@ streamlit
 streamlit-extras
 langchain
 pip
+OpenAI
