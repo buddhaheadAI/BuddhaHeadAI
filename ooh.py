@@ -1,64 +1,70 @@
+######################IMPORTS####################
+import openai
+from langchain.llms import OpenAI
+
 import streamlit as st
-import streamlit_chat
-from hugchat import hugchat
-from hugchat.login import Login
+from streamlit_extras.add_vertical_space import add_vertical_space
+llm=OpenAI(temperature=0)
 
-# App title
-st.set_page_config(page_title="Buddha Head AI - Find Peace with Us.")
 
-st.title("Buddha Head AI Chat Bot")
+######################IMPORTS####################
 
-# Hugging Face Credentials
+#######################MAIN######################
+
+st.title("Buddha Head")
+st.write("")
+
+
+#######################MAIN######################
+
+######################SIDEBAR####################
+
 with st.sidebar:
-    st.title('Buddha Head AI Chatbot')
+    st.title('Introduction and Information')
+    st.markdown("""🙏Buddha Head is an AI 
+    chatbot designed for you to engage in 
+    meaningful conversations with and explore 
+    the teachings of Buddhism with this virtual 
+    companion, empowering you to find inner 
+    peace and harmony.""")
+    st.markdown("Please feel free to ask any questions you may have. Remember, the path to enlightenment is a journey we're all on together.")
+    add_vertical_space(11)
     st.write("""
-    Made by Kunsang T. Ngodup,\n
-    for all sentient beings.\n \n 
+    Made by Kunsang T. Ngodup.\n
+    For all sentient beings.\n \n 
     \n ☮ Find peace with us. ☮
     """)
-    if ('EMAIL' in st.secrets) and ('PASS' in st.secrets):
-        st.success('', icon='✅')
-        hf_email = st.secrets['EMAIL']
-        hf_pass = st.secrets['PASS']
-    else:
-        hf_email = st.text_input('Enter E-mail:', type='password')
-        hf_pass = st.text_input('Enter password:', type='password')
-        if not (hf_email and hf_pass):
-            st.warning('Please enter your credentials!', icon='⚠️')
-        else:
-            st.success('Proceed to entering your prompt message!', icon='👉')
+    add_vertical_space(1)
+    st.write("If you are in an actual life-threatening situation call +1 (833)-456-4566.")
+    
+######################SIDEBAR####################
+OpenAI_API_KEY='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'
 
+####################ACTUAL CODE##################
 
-# Function for generating LLM response
+if "openai_model" not in st.session_state:
+    st.session_state["openai_model"] = "gpt-3.5-turbo"
 
-input_container = st.container()
-colored_header(label='', description='', color_name='blue-green-90')
-response_container = st.container()
+# Initialize chat history
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-def get_text():
-    input_text = st.text_input("You: ", "", key="in budhism")
-    return input_text
-## Applying the user input box
-with input_container:
-    user_input = get_text()
-sign = Login('BuddhaHead','buddhaheadAI123')
-cookies = sign.login()
-sign.saveCookies()
+# Display chat messages from history on app rerun
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
 
-def generate_response(prompt_input, email, passwd):
-    sign = Login(email, passwd)
-    cookies = sign.login()                     
-    chatbot = hugchat.ChatBot(cookies=cookies.get_dict())
-    return chatbot.chat(prompt_input)
+# Accept user input
+if prompt := st.chat_input("What Would you like to learn about today"):
+    # Add user message to chat history
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    # Display user message in chat message container
+    with st.chat_message("user"):
+        st.markdown(prompt)
+    with st.chat_message("assistant"):
+        message_placeholder = st.empty()
+        full_response = ""
 
-
-with response_container:
-    if user_input:
-        response = generate_response(user_input)
-        st.session_state.past.append(user_input)
-        st.session_state.generated.append(response)
-        
-    if st.session_state['generated']:
-        for i in range(len(st.session_state['generated'])):
-            message(st.session_state['past'][i], is_user=True, key=str(i) + '_user')
-            message(st.session_state["generated"][i], key=str(i))
+for response in openai.ChatCompletion.create(model=st.session_state["openai_model"], messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages], stream=True): 
+    full_response += response.choices[0].delta.get("content", ""),message_placeholder.markdown(full_response + "▌"), message_placeholder.markdown(full_response)
+st.session_state.messages.append({"role": "assistant", "content": full_response})
