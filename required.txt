@@ -1,5 +1,7 @@
-streamlit
-streamlit-extras
-langchain
-pip
-OpenAI
+beautifulsoup4
+selenium>=2.44.0,<3.0.0
+requests
+unidecode
+vcrpy
+future
+fake-useragent
