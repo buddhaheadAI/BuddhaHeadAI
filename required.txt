@@ -1,5 +1,3 @@
 streamlit
 streamlit-extras
 openai
-ddg-search
-serpapi
