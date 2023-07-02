@@ -1,0 +1,6 @@
+streamlit
+streamlit-chat
+streamlit-extras
+openai
+ddg-search
+serpapi
